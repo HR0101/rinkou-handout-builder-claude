@@ -11,7 +11,7 @@
 
 このリポジトリには、書籍・論文のPDF、翻訳成果物、抽出画像は含まれていません。利用者自身が適法に利用できる原典を用意してください。
 
-Codex／ChatGPT向けの同名スキルは [rinkou-handout-builder](https://github.com/HR0101/rinkou-handout-builder) にあります。作業手順は共通で、本リポジトリはPDFの読み取りやファイル操作をClaude Codeのツールに合わせて調整したものです。
+Codex／ChatGPT向けの同名スキルは [rinkou-handout-builder-codex](https://github.com/HR0101/rinkou-handout-builder-codex) にあります。作業手順は共通で、本リポジトリはPDFの読み取りやファイル操作をClaude Codeのツールに合わせて調整したものです。
 
 ## インストール
 
