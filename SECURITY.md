@@ -1,0 +1,5 @@
+# Security Policy
+
+脆弱性や、誤って含まれた秘密情報を発見した場合は、公開Issueへ機密情報を書き込まず、GitHubのSecurity Advisoryから報告してください。
+
+原著PDFや未公開の研究資料など、機密または再配布できないファイルをIssueやPull Requestへ添付しないでください。
