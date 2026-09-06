@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "rinkou-handout-builder",
+  "version": "1.0.0",
+  "description": "原著PDFの指定範囲から、全文翻訳・独立解説・原図・数式を備えた日本語のLaTeX輪講資料を作成し、生成したPDFを検証するスキル。",
+  "author": {
+    "name": "HR0101",
+    "url": "https://github.com/HR0101"
+  },
+  "homepage": "https://github.com/HR0101/rinkou-handout-builder-claude",
+  "repository": "https://github.com/HR0101/rinkou-handout-builder-claude",
+  "license": "MIT",
+  "keywords": [
+    "latex",
+    "pdf",
+    "japanese",
+    "translation",
+    "seminar",
+    "agent-skills"
+  ]
+}
