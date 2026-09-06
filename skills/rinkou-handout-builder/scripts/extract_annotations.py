@@ -61,6 +61,56 @@ def clean(value):
     return " ".join(text.split())
 
 
+# 注釈の色名判定に使う代表色（PDFの /C は 0.0〜1.0 のRGB）
+COLOR_NAMES = (
+    ("赤", (1.0, 0.0, 0.0)),
+    ("橙", (1.0, 0.65, 0.0)),
+    ("黄", (1.0, 1.0, 0.0)),
+    ("緑", (0.0, 0.8, 0.0)),
+    ("水色", (0.0, 1.0, 1.0)),
+    ("青", (0.0, 0.0, 1.0)),
+    ("紫", (0.6, 0.2, 0.8)),
+    ("桃", (1.0, 0.75, 0.8)),
+    ("灰", (0.5, 0.5, 0.5)),
+    ("黒", (0.0, 0.0, 0.0)),
+    ("白", (1.0, 1.0, 1.0)),
+)
+
+
+def color_of(annotation):
+    """注釈の色を「色名 (R,G,B)」の形へ整える。
+
+    添削者がハイライトの色で指摘の種類を分けている場合があり、
+    色が分からないとコメント本文のない注釈の意図を判別できない。
+    """
+    raw = annotation.get("/C")
+    if not raw:
+        return ""
+    try:
+        values = [float(component) for component in raw]
+    except (TypeError, ValueError):
+        return ""
+    if len(values) == 1:  # グレースケール
+        values = values * 3
+    if len(values) == 4:  # CMYK
+        cyan, magenta, yellow, black = values
+        values = [
+            (1.0 - cyan) * (1.0 - black),
+            (1.0 - magenta) * (1.0 - black),
+            (1.0 - yellow) * (1.0 - black),
+        ]
+    if len(values) != 3:
+        return ""
+    # 代表色のうち最も近いものを色名として採用する
+    name = min(
+        COLOR_NAMES,
+        key=lambda entry: sum(
+            (entry[1][index] - values[index]) ** 2 for index in range(3)
+        ),
+    )[0]
+    return f"{name} ({values[0]:.2f}, {values[1]:.2f}, {values[2]:.2f})"
+
+
 def collect(reader):
     """全ページの注釈を取り出す。Popup は親注釈の重複なので除く。"""
     found = []
@@ -94,6 +144,7 @@ def collect(reader):
                     "subject": clean(annotation.get("/Subj")),
                     "comment": comment,
                     "author": clean(annotation.get("/T")),
+                    "color": color_of(annotation),
                 }
             )
     return found
@@ -126,14 +177,17 @@ def main():
     annotations = collect(reader)
 
     if args.format == "tsv":
-        print("page\tsubtype\tauthor\tcomment")
+        print("page\tsubtype\tcolor\tauthor\tcomment")
         for item in annotations:
             print(
-                f"{item['page']}\t{item['subtype']}\t{item['author']}\t{item['comment']}"
+                f"{item['page']}\t{item['subtype']}\t{item['color']}"
+                f"\t{item['author']}\t{item['comment']}"
             )
     else:
         for index, item in enumerate(annotations, start=1):
             print(f"[{index}] p.{item['page']} {item['subtype']}", end="")
+            if item["color"]:
+                print(f" / {item['color']}", end="")
             if item["author"]:
                 print(f" / {item['author']}", end="")
             print()
@@ -143,6 +197,23 @@ def main():
                 print(f"    コメント: {item['comment']}")
             else:
                 print("    コメント: （本文なし。ハイライト等の選択箇所そのものが指摘）")
+
+        # 色を使い分けている添削では、色ごとの件数が指摘の分類そのものを表す
+        counts = {}
+        for item in annotations:
+            if item["color"]:
+                name = item["color"].split(" ")[0]
+                counts[name] = counts.get(name, 0) + 1
+        if len(counts) > 1:
+            summary = "，".join(
+                f"{name} {count}件"
+                for name, count in sorted(counts.items(), key=lambda x: -x[1])
+            )
+            print(f"\n色ごとの件数: {summary}")
+            print(
+                "添削者が色で指摘の種類を分けている場合がある。"
+                "凡例を示すコメントがないか確認する。"
+            )
 
     print(f"\n注釈の総数: {len(annotations)} 件 / 全 {len(reader.pages)} ページ")
     if not annotations:
