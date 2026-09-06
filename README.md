@@ -54,11 +54,20 @@ rm -rf /tmp/rinkou-claude
 既存のhandout.texがあれば修正し、完成PDFを全ページ確認してください。
 ```
 
-明示的に呼び出す場合は、スラッシュコマンドとして指定します。
+明示的に呼び出す場合は、スキル名をスラッシュコマンドとして指定します。
 
 ```text
 /rinkou-handout-builder:rinkou-handout-builder
 ```
+
+プラグインとして導入した場合は、次の2つの専用コマンドも使えます。
+
+```text
+/rinkou-handout-builder:build 原典.pdf 33-42 1.6-1.6.3.2
+/rinkou-handout-builder:review 添削済み.pdf handout.tex
+```
+
+`build`は資料の作成・修正とPDF検証を、`review`は添削済みPDFの注釈を全件抽出したうえでの反映を行います。
 
 対象PDF、印刷ページ範囲、開始節、終了節、出力先を明記すると安定します。添削済みPDFがある場合は、そのパスも渡してください。
 
@@ -111,6 +120,12 @@ skills/rinkou-handout-builder/scripts/extract_annotations.py path/to/reviewed.pd
 ├── .claude-plugin/
 │   ├── marketplace.json
 │   └── plugin.json
+├── .github/
+│   └── workflows/
+│       └── validate.yml
+├── commands/
+│   ├── build.md
+│   └── review.md
 ├── skills/
 │   └── rinkou-handout-builder/
 │       ├── SKILL.md
@@ -120,11 +135,24 @@ skills/rinkou-handout-builder/scripts/extract_annotations.py path/to/reviewed.pd
 │       └── scripts/
 │           ├── build_and_check.sh
 │           └── extract_annotations.py
+├── tools/
+│   └── validate.py
+├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── README.md
 └── SECURITY.md
 ```
+
+## 開発者向け
+
+変更を加えたら、公開前に定義ファイルを検証してください。
+
+```bash
+python3 tools/validate.py
+```
+
+plugin.jsonとmarketplace.jsonのJSON妥当性、必須フィールド、プラグイン名の一致、SKILL.mdのフロントマター、スキル名とディレクトリ名の一致、SKILL.mdが参照するファイルの実在、同梱スクリプトの実行権限と構文を確認します。同じ検証がpushとプルリクエストのたびにGitHub Actionsでも実行されます。
 
 ## 著作権上の注意
 
