@@ -1,0 +1,33 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: プラグイン定義とスキルの検証
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取得する
+        uses: actions/checkout@v4
+
+      - name: Pythonを準備する
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: プラグイン定義とスキルを検証する
+        run: python3 tools/validate.py
+
+      - name: 注釈抽出スクリプトの依存関係を確認する
+        run: |
+          python3 -m pip install --quiet pypdf
+          python3 -c "import pypdf; print('pypdf', pypdf.__version__)"
+          # 引数なし実行で使い方を表示して終了することを確認する
+          if skills/rinkou-handout-builder/scripts/extract_annotations.py; then
+            echo "引数なしでも成功終了している。使い方を表示して失敗すべき" >&2
+            exit 1
+          fi
